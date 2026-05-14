@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Engineering Escalations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .header-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .last-updated {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            padding: 12px 18px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stat-red {
+            background: #fee;
+            color: #c00;
+        }
+
+        .stat-yellow {
+            background: #ffd;
+            color: #a80;
+        }
+
+        .stat-green {
+            background: #efe;
+            color: #080;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #555;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .escalations-container {
+            display: grid;
+            gap: 16px;
+        }
+
+        .escalation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 6px solid #ddd;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .escalation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .escalation-card.status-red {
+            border-left-color: #d32f2f;
+            background: #fffbfb;
+        }
+
+        .escalation-card.status-yellow {
+            border-left-color: #f57f17;
+            background: #fffef5;
+        }
+
+        .escalation-card.status-green {
+            border-left-color: #388e3c;
+            background: #f5fdf5;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+            max-width: 70%;
+        }
+
+        .card-overview {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .status-flag {
+            font-size: 24px;
+            text-align: right;
+        }
+
+        .card-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            color: #999;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            color: #333;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .meta-value a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .meta-value a:hover {
+            text-decoration: underline;
+        }
+
+        .days-open {
+            font-weight: 700;
+            color: #d32f2f;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        .status-badge.resolved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.in-progress {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-badge.waiting {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-btn {
+                width: 100%;
+            }
+
+            .card-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                flex-direction: column;
+            }
+
+            .status-flag {
+                text-align: left;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Ads Engineering Escalations</h1>
+            <div class="header-meta">
+                <div class="last-updated">Last updated: <span id="lastUpdated">--</span></div>
+                <div class="stats">
+                    <div class="stat-box stat-red">🔴 <span id="staleCount">0</span> Stale</div>
+                    <div class="stat-box stat-yellow">🟡 <span id="inProgressCount">0</span> In Progress</div>
+                    <div class="stat-box stat-green">✅ <span id="resolvedCount">0</span> Resolved</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="filter-btn active" onclick="filterStatus('all')">All</button>
+            <button class="filter-btn" onclick="filterStatus('red')">🔴 Stale</button>
+            <button class="filter-btn" onclick="filterStatus('yellow')">🟡 In Progress</button>
+            <button class="filter-btn" onclick="filterStatus('green')">✅ Resolved</button>
+            <button class="filter-btn" onclick="refreshNow()" style="margin-left: auto; background: #667eea; color: white; border-color: #667eea;">🔄 Refresh Now</button>
+        </div>
+
+        <div id="errorContainer"></div>
+        <div id="loadingContainer" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading escalations...</p>
+        </div>
+        <div id="escalationsContainer" class="escalations-container" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const SHEET_ID = ''; // You'll fill this in
+        const SHEET_NAME = 'Escalation Tracker';
+        let escalations = [];
+        let currentFilter = 'all';
+
+        // Get Sheet ID from user
+        function getSheetId() {
+            const id = prompt(
+                'Paste your Google Sheet ID:\n\n' +
+                '(Find it in the Sheet URL: docs.google.com/spreadsheets/d/[ID]/edit)'
+            );
+            if (id) {
+                localStorage.setItem('escalationSheetId', id);
+                loadData();
+            }
+        }
+
+        // Load data from Google Sheet
+        async function loadData() {
+            try {
+                let sheetId = localStorage.getItem('escalationSheetId');
+                
+                if (!sheetId) {
+                    getSheetId();
+                    return;
+                }
+
+                const response = await fetch(
+                    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/query?tqx=out:json&sheet=${SHEET_NAME}`
+                );
+
+                const text = await response.text();
+                const jsonData = JSON.parse(text.substring(47).slice(0, -2));
+
+                escalations = [];
+
+                if (jsonData.table && jsonData.table.rows) {
+                    jsonData.table.rows.forEach((row, idx) => {
+                        if (row.c && row.c[0]) { // Skip empty rows
+                            escalations.push({
+                                title: row.c[0]?.v || '',
+                                overview: row.c[1]?.v || '',
+                                gchatLink: row.c[2]?.v || '',
+                                dateRaised: row.c[3]?.v || '',
+                                jiraTicket: row.c[4]?.v || '',
+                                jiraStatus: row.c[5]?.v || '',
+                                lastJiraUpdate: row.c[6]?.v || '',
+                                daysOpen: row.c[7]?.v || 0,
+                                statusFlag: row.c[8]?.v || ''
+                            });
+                        }
+                    });
+                }
+
+                renderEscalations();
+                updateStats();
+                updateLastUpdated();
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('escalationsContainer').style.display = 'grid';
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error">
+                        ⚠️ Error loading data. Make sure your Sheet ID is correct and the sheet is shared.<br>
+                        <strong>Current Sheet ID:</strong> ${localStorage.getItem('escalationSheetId') || 'None'}
+                        <br><button onclick="getSheetId()" style="margin-top: 10px; padding: 8px 12px; border: none; background: #ffc107; border-radius: 4px; cursor: pointer;">Change Sheet ID</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Render escalations as cards
+        function renderEscalations() {
+            const container = document.getElementById('escalationsContainer');
+            const filtered = escalations.filter(e => {
+                if (currentFilter === 'all') return true;
+                if (currentFilter === 'red') return e.statusFlag && e.statusFlag.includes('🔴');
+                if (currentFilter === 'yellow') return e.statusFlag && e.statusFlag.includes('🟡');
+                if (currentFilter === 'green') return e.statusFlag && e.statusFlag.includes('✅');
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1;">
+                        <div class="empty-state">
+                            <h2>✨ No escalations</h2>
+                            <p>All clear! Great work.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(e => {
+                const statusClass = e.statusFlag ? 
+                    (e.statusFlag.includes('🔴') ? 'status-red' : 
+                     e.statusFlag.includes('🟡') ? 'status-yellow' : 'status-green') : '';
+
+                const statusBadgeClass = e.jiraStatus ?
+                    (e.jiraStatus === 'Resolved' ? 'resolved' :
+                     e.jiraStatus === 'In Progress' ? 'in-progress' : 'waiting') : 'waiting';
+
+                return `
+                    <div class="escalation-card ${statusClass}">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">${escapeHtml(e.title)}</div>
+                                <div class="card-overview">${escapeHtml(e.overview)}</div>
+                            </div>
+                            <div class="status-flag">${e.statusFlag || '—'}</div>
+                        </div>
+                        <div class="card-meta">
+                            <div class="meta-item">
+                                <div class="meta-label">Days Open</div>
+                                <div class="meta-value ${e.daysOpen > 3 ? 'days-open' : ''}">${e.daysOpen || 0} days</div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Jira Status</div>
+                                <div><span class="status-badge ${statusBadgeClass}">${e.jiraStatus || 'Waiting'}</span></div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-label">Last Update</div>
+                                <div class="meta-value">${e.lastJiraUpdate || '—'}</div>
+                            </div>
+                            ${e.gchatLink ? `
+                            <div class="meta-item">
+                                <div class="meta-label">GChat</div>
+                                <div class="meta-value"><a href="${escapeHtml(e.gchatLink)}" target="_blank">View Thread →</a></div>
+                            </div>
+                            ` : ''}
+                            ${e.jiraTicket ? `
+                            <div class="meta-item">
+                                <div class="meta-label">Jira Ticket</div>
+                                <div class="meta-value"><a href="${escapeHtml(e.jiraTicket)}" target="_blank">Open Ticket →</a></div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Filter functionality
+        function filterStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderEscalations();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const stale = escalations.filter(e => e.statusFlag && e.statusFlag.includes('🔴')).length;
+            const inProgress = escalations.filter(e => e.statusFlag && e.statusFlag.includes('🟡')).length;
+            const resolved = escalations.filter(e => e.statusFlag && e.statusFlag.includes('✅')).length;
+
+            document.getElementById('staleCount').textContent = stale;
+            document.getElementById('inProgressCount').textContent = inProgress;
+            document.getElementById('resolvedCount').textContent = resolved;
+        }
+
+        // Update last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('lastUpdated').textContent = `${dateStr} at ${timeStr}`;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Refresh data every hour
+        setInterval(loadData, 60 * 60 * 1000);
+
+        // Load on page load
+        window.addEventListener('load', loadData);
+
+        // Manual refresh
+        function refreshNow() {
+            document.getElementById('loadingContainer').style.display = 'block';
+            document.getElementById('escalationsContainer').style.display = 'none';
+            loadData();
+        }
+    </script>
+</body>
+</html>
