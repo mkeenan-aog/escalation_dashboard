@@ -361,42 +361,42 @@
         let currentFilter = 'all';
 
         async function loadData() {
-            try {
-                let appsScriptUrl = localStorage.getItem('appsScriptUrl');
-                
-                if (!appsScriptUrl) {
-                    appsScriptUrl = prompt('Paste your Google Apps Script deployment URL:\n\n(From Apps Script > Deploy > Web app > copy the URL)');
-                    if (!appsScriptUrl) return;
-                    localStorage.setItem('appsScriptUrl', appsScriptUrl);
-                }
-
-                const response = await fetch(appsScriptUrl);
-                const data = await response.json();
-
-                if (Array.isArray(data)) {
-                    escalations = data;
-                    renderEscalations();
-                    updateStats();
-                    updateLastUpdated();
-                    document.getElementById('loadingContainer').style.display = 'none';
-                    document.getElementById('escalationsContainer').style.display = 'grid';
-                    document.getElementById('errorContainer').innerHTML = '';
-                } else if (data.error) {
-                    throw new Error(data.error);
-                }
-
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('loadingContainer').style.display = 'none';
-                document.getElementById('errorContainer').innerHTML = `
-                    <div class="error">
-                        ⚠️ Error: ${error.message}<br>
-                        <strong>Current URL:</strong> ${localStorage.getItem('appsScriptUrl') || 'None set'}
-                        <br><button onclick="changeAppsScriptUrl()">Change URL</button>
-                    </div>
-                `;
-            }
+    try {
+        let url = localStorage.getItem('appsScriptUrl');
+        
+        if (!url) {
+            url = prompt('Paste your Google Apps Script deployment URL:\n\n(From Apps Script > Deploy > Web app > copy the URL)');
+            if (!url) return;
+            localStorage.setItem('appsScriptUrl', url);
         }
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+            escalations = data;
+            renderEscalations();
+            updateStats();
+            updateLastUpdated();
+            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('escalationsContainer').style.display = 'grid';
+            document.getElementById('errorContainer').innerHTML = '';
+        } else if (data.error) {
+            throw new Error(data.error);
+        }
+
+    } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('loadingContainer').style.display = 'none';
+        document.getElementById('errorContainer').innerHTML = `
+            <div class="error">
+                ⚠️ Error: ${error.message}<br>
+                <strong>Current URL:</strong> ${localStorage.getItem('appsScriptUrl') || 'None set'}
+                <br><button onclick="changeAppsScriptUrl()">Change URL</button>
+            </div>
+        `;
+    }
+}
 
         function changeAppsScriptUrl() {
             const newUrl = prompt('Paste your Google Apps Script deployment URL:');
