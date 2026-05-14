@@ -365,61 +365,35 @@
             }
         }
 
-        // Load data from Google Sheet
         async function loadData() {
-            try {
-                let sheetId = localStorage.getItem('escalationSheetId');
-                
-                if (!sheetId) {
-                    getSheetId();
-                    return;
-                }
-
-                const response = await fetch(
-                    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/query?tqx=out:json&sheet=${SHEET_NAME}`
-                );
-
-                const text = await response.text();
-                const jsonData = JSON.parse(text.substring(47).slice(0, -2));
-
-                escalations = [];
-
-                if (jsonData.table && jsonData.table.rows) {
-                    jsonData.table.rows.forEach((row, idx) => {
-                        if (row.c && row.c[0]) { // Skip empty rows
-                            escalations.push({
-                                title: row.c[0]?.v || '',
-                                overview: row.c[1]?.v || '',
-                                gchatLink: row.c[2]?.v || '',
-                                dateRaised: row.c[3]?.v || '',
-                                jiraTicket: row.c[4]?.v || '',
-                                jiraStatus: row.c[5]?.v || '',
-                                lastJiraUpdate: row.c[6]?.v || '',
-                                daysOpen: row.c[7]?.v || 0,
-                                statusFlag: row.c[8]?.v || ''
-                            });
-                        }
-                    });
-                }
-
-                renderEscalations();
-                updateStats();
-                updateLastUpdated();
-                document.getElementById('loadingContainer').style.display = 'none';
-                document.getElementById('escalationsContainer').style.display = 'grid';
-
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('loadingContainer').style.display = 'none';
-                document.getElementById('errorContainer').innerHTML = `
-                    <div class="error">
-                        ⚠️ Error loading data. Make sure your Sheet ID is correct and the sheet is shared.<br>
-                        <strong>Current Sheet ID:</strong> ${localStorage.getItem('escalationSheetId') || 'None'}
-                        <br><button onclick="getSheetId()" style="margin-top: 10px; padding: 8px 12px; border: none; background: #ffc107; border-radius: 4px; cursor: pointer;">Change Sheet ID</button>
-                    </div>
-                `;
-            }
+    try {
+        const deploymentUrl = 'YOUR_APPS_SCRIPT_URL'; // Paste your deployment URL here
+        
+        const response = await fetch(deploymentUrl);
+        const escalations = await response.json();
+        
+        if (Array.isArray(escalations)) {
+            window.escalations = escalations;
+            renderEscalations();
+            updateStats();
+            updateLastUpdated();
+            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('escalationsContainer').style.display = 'grid';
+        } else if (escalations.error) {
+            throw new Error(escalations.error);
         }
+        
+    } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('loadingContainer').style.display = 'none';
+        document.getElementById('errorContainer').innerHTML = `
+            <div class="error">
+                ⚠️ Error loading data: ${error.message}<br>
+                Make sure your Apps Script deployment URL is correct.
+            </div>
+        `;
+    }
+}
 
         // Render escalations as cards
         function renderEscalations() {
