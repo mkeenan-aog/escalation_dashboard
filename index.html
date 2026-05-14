@@ -373,10 +373,10 @@
                         '(From Apps Script > Deploy > Web app > copy the )'
                     );
                     if (!appsScript) return;
-                    localStorage.setItem('appsScript', appsScriptUrl);
+                    localStorage.setItem('appsScriptUrl', appsScript);
                 }
 
-                const response = await fetch(appsScriptUrl);
+                const response = await fetch(appsScript);
                 const data = await response.json();
 
                 if (Array.isArray(data)) {
