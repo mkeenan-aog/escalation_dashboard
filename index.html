@@ -357,26 +357,20 @@
     </div>
 
     <script>
-        // Configuration
-        const SHEET_NAME = 'Escalation Tracker';
         let escalations = [];
         let currentFilter = 'all';
 
-        // Load data from Apps Script API
         async function loadData() {
             try {
-                let appsScript = localStorage.getItem('appsScript');
+                let appsScriptUrl = localStorage.getItem('appsScriptUrl');
                 
-                if (!appsScript) {
-                    appsScript = prompt(
-                        'Paste your Google Apps Script deployment :\n\n' +
-                        '(From Apps Script > Deploy > Web app > copy the )'
-                    );
-                    if (!appsScript) return;
-                    localStorage.setItem('appsScriptUrl', appsScript);
+                if (!appsScriptUrl) {
+                    appsScriptUrl = prompt('Paste your Google Apps Script deployment URL:\n\n(From Apps Script > Deploy > Web app > copy the URL)');
+                    if (!appsScriptUrl) return;
+                    localStorage.setItem('appsScriptUrl', appsScriptUrl);
                 }
 
-                const response = await fetch(appsScript);
+                const response = await fetch(appsScriptUrl);
                 const data = await response.json();
 
                 if (Array.isArray(data)) {
@@ -396,7 +390,7 @@
                 document.getElementById('loadingContainer').style.display = 'none';
                 document.getElementById('errorContainer').innerHTML = `
                     <div class="error">
-                        ⚠️ Error loading data: ${error.message}<br>
+                        ⚠️ Error: ${error.message}<br>
                         <strong>Current URL:</strong> ${localStorage.getItem('appsScriptUrl') || 'None set'}
                         <br><button onclick="changeAppsScriptUrl()">Change URL</button>
                     </div>
@@ -420,7 +414,6 @@
             loadData();
         }
 
-        // Render escalations as cards
         function renderEscalations() {
             const container = document.getElementById('escalationsContainer');
             const filtered = escalations.filter(e => {
@@ -492,7 +485,6 @@
             }).join('');
         }
 
-        // Filter functionality
         function filterStatus(status) {
             currentFilter = status;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -500,7 +492,6 @@
             renderEscalations();
         }
 
-        // Update statistics
         function updateStats() {
             const stale = escalations.filter(e => e.statusFlag && e.statusFlag.includes('🔴')).length;
             const inProgress = escalations.filter(e => e.statusFlag && e.statusFlag.includes('🟡')).length;
@@ -511,7 +502,6 @@
             document.getElementById('resolvedCount').textContent = resolved;
         }
 
-        // Update last updated time
         function updateLastUpdated() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -519,17 +509,13 @@
             document.getElementById('lastUpdated').textContent = `${dateStr} at ${timeStr}`;
         }
 
-        // Escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Refresh data every hour
         setInterval(loadData, 60 * 60 * 1000);
-
-        // Load on page load
         window.addEventListener('load', loadData);
     </script>
 </body>
