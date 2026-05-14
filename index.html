@@ -365,15 +365,15 @@
         // Load data from Apps Script API
         async function loadData() {
             try {
-                let appsScriptUrl = localStorage.getItem('appsScriptUrl');
+                let appsScript = localStorage.getItem('appsScript');
                 
-                if (!appsScriptUrl) {
-                    appsScriptUrl = prompt(
-                        'Paste your Google Apps Script deployment URL:\n\n' +
-                        '(From Apps Script > Deploy > Web app > copy the URL)'
+                if (!appsScript) {
+                    appsScript = prompt(
+                        'Paste your Google Apps Script deployment :\n\n' +
+                        '(From Apps Script > Deploy > Web app > copy the )'
                     );
-                    if (!appsScriptUrl) return;
-                    localStorage.setItem('appsScriptUrl', appsScriptUrl);
+                    if (!appsScript) return;
+                    localStorage.setItem('appsScript', appsScriptUrl);
                 }
 
                 const response = await fetch(appsScriptUrl);
